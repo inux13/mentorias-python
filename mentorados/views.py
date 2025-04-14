@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
-from .models import Mentorados, Navigators, DisponibilidadeHorarios
+from .models import Mentorados, Navigators, DisponibilidadeHorarios, Reuniao
 from django.contrib import messages
 from django.contrib.messages import constants
 from datetime import datetime, timedelta
@@ -104,3 +104,20 @@ def escolher_dia(request):
         # Mes e dia dinamicos
 
         return render(request, 'escolher_dia.html', {'horarios': list(set(datas)), } )
+    
+def agendar_reuniao(request):
+    if not valida_token(request.COOKIES.get('auth_token')):
+        return redirect('auth_mentorado')
+    
+    if request.method == 'GET':
+        data = request.GET.get('data')
+        data = datetime.strptime(data, '%d-%m-%Y')
+        mentorado = valida_token(request.COOKIES.get('auth_token'))
+        horarios = DisponibilidadeHorarios.objects.filter(
+            data_inicial__gte=data,
+            data_inicial__lt=data + timedelta(days=1),
+            agendado=False,
+            mentor=mentorado.user
+        )
+
+        return render(request, 'agendar_reuniao.html', {'horarios':horarios, 'tags': Reuniao.tag_choices})
