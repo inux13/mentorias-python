@@ -8,6 +8,8 @@ from .auth import valida_token
 from  django.views.decorators.csrf import csrf_exempt   
 from django.contrib.auth.decorators import login_required
 
+import locale
+
 # Create your views here.
 @login_required
 def mentorados(request):
@@ -97,14 +99,22 @@ def escolher_dia(request):
             mentor=mentorado.user
         ).values_list('data_inicial', flat=True)
 
-        datas = []
+
+        #Feito: mes e dias da semana dinamicos
+        data_info = []
         for i in disponilidades:
-           datas.append(i.date().strftime('%d-%m-%Y')) 
-       
+            data_formatada = i.date().strftime('%d-%m-%Y')
+            locale.setlocale(locale.LC_ALL, 'pt_pt.UTF-8')
+            mes = i.date().strftime('%B').capitalize()
+            semana = i.date().strftime('%A').capitalize()
+           
+            data_info.append ({ 
+                'data': data_formatada,
+                'mes': mes,
+                'semana': semana,
+            })
 
-        # Mes e dia dinamicos
-
-        return render(request, 'escolher_dia.html', {'horarios': list(set(datas)), } )
+        return render(request, 'escolher_dia.html', {'data_info': data_info } )
     
 def agendar_reuniao(request):
     if not valida_token(request.COOKIES.get('auth_token')):
@@ -112,18 +122,22 @@ def agendar_reuniao(request):
     
     mentorado = valida_token(request.COOKIES.get('auth_token'))
 
-    #todo: validar se o horario agendado é realmente de um mentor do mentorado
 
     if request.method == 'GET':
         data = request.GET.get('data')
         data = datetime.strptime(data, '%d-%m-%Y')
-        
+
         horarios = DisponibilidadeHorarios.objects.filter(
             data_inicial__gte=data,
             data_inicial__lt=data + timedelta(days=1),
             agendado=False,
-            mentor=mentorado.user
+            mentor =mentorado.user
         )
+
+    #Feito: validar se o horario agendado é realmente de um mentor do mentorado
+        if not horarios.exists():
+            raise Http404
+        
 
         return render(request, 'agendar_reuniao.html', {'horarios':horarios, 'tags': Reuniao.tag_choices})
 

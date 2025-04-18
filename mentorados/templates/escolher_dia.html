@@ -18,14 +18,14 @@
             {% endfor %}
         {% endif %}
         <ul role="list" class="mt-3 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-            {% for horario in horarios %}         
+            {% for item in data_info %}         
                 <li class="col-span-1 flex rounded-md shadow-sm">
                    
-                        <div class="flex px-4 shrink-0 items-center justify-center rounded-l-md bg-pink-600 text-sm font-medium text-white">Março</div>
+                        <div class="flex px-4 shrink-0 items-center justify-center rounded-l-md bg-pink-600 text-sm font-medium text-white">{{item.mes}}</div>
                         <div class="flex flex-1 items-center justify-between truncate rounded-r-md border-b border-r border-t border-gray-200 bg-white">
                             <div class="flex-1 truncate px-4 py-2 text-sm">
-                            <a href="{% url 'agendar_reuniao' %}?data={{horario}}" class="font-medium text-gray-900 hover:text-gray-600">Quinta-feira</a>
-                            <p class="text-gray-500">{{horario}}</p>
+                            <a href="{% url 'agendar_reuniao' %}?data={{item.data}}" class="font-medium text-gray-900 hover:text-gray-600">{{item.semana}}</a>
+                            <p class="text-gray-500">{{item.data}}</p>
                             </div>
                         </div>
                     
